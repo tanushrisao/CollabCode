@@ -592,7 +592,7 @@ function initSocketIO() {
     return;
   }
 
-  socket = io(window.location.origin, {
+  socket = io('http://localhost:3000', {
     transports: ['websocket', 'polling'],
     timeout: 5000
   });
@@ -835,15 +835,15 @@ async function executeWorkspaceCode() {
   updateStatusDot('running', 'Executing...');
   showToast(`Compiling ${currentLanguage.toUpperCase()} Sandbox...`, 'success');
 
-  // 1. JavaScript Solo Sandbox Execution Fallback
+  // 1. JavaScript runs locally in browser
   if (currentLanguage === 'javascript') {
     executeLocalJavaScript(code);
     return;
   }
 
-  // 2. Multi-Language Sandboxing via free secure Piston API engine
-  let pistonLangMap = {
-    'python': 'python3',
+  // 2. All other languages use Piston API
+  const pistonLangMap = {
+    'python': 'python',
     'typescript': 'typescript',
     'html': 'html',
     'css': 'css',
@@ -854,60 +854,59 @@ async function executeWorkspaceCode() {
   const pistonLang = pistonLangMap[currentLanguage];
   if (!pistonLang) {
     updateStatusDot('error', 'Execution Failed');
-    showToast('Multi-Language sandbox does not support this language!', 'error');
+    showToast('This language is not supported for execution!', 'error');
     return;
   }
 
   try {
-    const response = await fetch('https://emkc.org/api/v2/piston/execute', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        language: currentLanguage === 'python' ? 'python' : currentLanguage,
-        version: '*',
-        files: [
-          {
-            name: activeFile,
-            content: code
-          }
-        ]
-      })
-    });
+    const glotLangMap = {
+      'python': 'python',
+      'typescript': 'javascript',
+      'html': 'html',
+      'css': 'css',
+      'json': 'json',
+      'markdown': 'markdown'
+    };
 
-    const result = await response.json();
+    const glotLang = glotLangMap[currentLanguage] || 'python';
 
-    if (result && result.run) {
-      const logs = [];
-      const stdout = result.run.stdout;
-      const stderr = result.run.stderr;
+    const response = await fetch('/api/execute', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ code, language: currentLanguage })
+});
 
-      if (stdout) {
-        logs.push({ type: 'log', text: stdout.trim() });
-      }
-      if (stderr) {
-        logs.push({ type: 'error', text: stderr.trim() });
-      }
+const result = await response.json();
 
-      const hasError = result.run.code !== 0 || !!stderr;
-      renderOutputLogs(logs, hasError ? 'Compilation Error' : null, false);
-
-      // Broadcast output results to collaborators
-      if (socket && socket.connected) {
-        socket.emit('run-code', { room, logs, error: hasError ? 'Compilation Error' : null });
-      }
-    } else {
-      updateStatusDot('error', 'Execution Failed');
-      showToast('Piston sandbox compiler returned an empty response', 'error');
+if (result) {
+    const logs = [];
+    if (result.stdout) {
+      result.stdout.split('\n').forEach(line => {
+        if (line.trim()) logs.push({ type: 'log', text: line });
+      });
     }
+    if (result.stderr) {
+      result.stderr.split('\n').forEach(line => {
+        if (line.trim()) logs.push({ type: 'error', text: line });
+      });
+    }
+    if (logs.length === 0) {
+      logs.push({ type: 'log', text: '✓ Executed successfully (no output)' });
+    }
+    const hasError = !!result.stderr;
+    renderOutputLogs(logs, hasError ? 'Error' : null, false);
+    updateStatusDot(hasError ? 'error' : 'idle', hasError ? 'Error' : 'Success');
+    if (socket && socket.connected) {
+      socket.emit('run-code', { room, logs, error: hasError ? 'Error' : null });
+    }
+  }
+
   } catch (err) {
-    console.error('Piston sandbox connection error:', err);
+    console.error('Compiler error:', err);
     updateStatusDot('error', 'Network Error');
-    showToast('Failed to connect to sandboxed compiler API', 'error');
+    showToast('Failed to reach compiler API — check internet connection', 'error');
   }
 }
-
 // EXECUTE LOCAL JAVASCRIPT IN BROWSER
 function executeLocalJavaScript(code) {
   const capturedLogs = [];

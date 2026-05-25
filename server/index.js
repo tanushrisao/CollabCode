@@ -13,54 +13,24 @@ const { initSocket } = require('./socket');
 const app = express();
 const httpServer = http.createServer(app);
 
-// Set up Socket.io with CORS to accept any origin (bulletproof for both localhost and live deploy)
 const io = new Server(httpServer, {
-  cors: {
-    origin: '*',
-    methods: ['GET', 'POST'],
-  },
+  cors: { origin: '*', methods: ['GET', 'POST'] },
 });
 
-// Middleware — parse JSON, allow cross-origin requests
 app.use(cors());
 app.use(express.json());
-
-// ⚡ ADD THIS: Tell server to load files from client folder
 app.use(express.static(path.join(__dirname, '../client')));
 
-// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/sessions', sessionRoutes);
+const executeRoute = require('./routes/execute');
+app.use('/api/execute', executeRoute);
 
-// 🏠 1. Show the beautiful Landing Page
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/index.html'));
-});
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, '../client/index.html')));
+app.get('/login', (req, res) => res.sendFile(path.join(__dirname, '../client/auth.html')));
+app.get('/editor/:roomId', (req, res) => res.sendFile(path.join(__dirname, '../client/editor.html')));
+app.get('/dashboard', (req, res) => res.sendFile(path.join(__dirname, '../client/dashboard.html')));
 
-// 🔐 2. Show the Login/Signup Page
-app.get('/login', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/auth.html'));
-});
-
-// ✏️ 3. Show the Code Editor when a room ID is opened
-app.get('/editor/:roomId', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/editor.html'));
-});
-
-// 📊 3.5. Show the Sessions Dashboard
-app.get('/dashboard', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/dashboard.html'));
-});
-
-// 🚫 4. If someone goes to a page that doesn't exist, show the beautiful 404 Page!
-app.get('/*splat', (req, res, next) => {
-  // Bypass Express catch-all for Socket.io polling/handshake endpoints
-  if (req.path.startsWith('/socket.io')) {
-    return next();
-  }
-  res.status(404).sendFile(path.join(__dirname, '../client/404.html'));
-});
-// Connect to MongoDB, then start server
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
@@ -71,5 +41,4 @@ mongoose
   })
   .catch((err) => console.error('❌ MongoDB connection error:', err));
 
-// Initialize socket logic
 initSocket(io);
