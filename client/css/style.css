@@ -880,6 +880,7 @@ body {
 
 .chat-bubble {
   max-width: 85%;
+  width: fit-content;
   padding: 0.5rem 0.8rem;
   border-radius: 12px;
   font-size: 0.82rem;
@@ -887,6 +888,9 @@ body {
   display: flex;
   flex-direction: column;
   position: relative;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .chat-bubble.incoming {
@@ -894,6 +898,7 @@ body {
   border: 1px solid var(--glass-border);
   align-self: flex-start;
   border-bottom-left-radius: 2px;
+  margin-right: auto;
 }
 
 .chat-bubble.outgoing {
@@ -901,6 +906,7 @@ body {
   border: 1px solid rgba(var(--accent-green-rgb), 0.2);
   align-self: flex-end;
   border-bottom-right-radius: 2px;
+  margin-left: auto;
 }
 
 .chat-sender {
@@ -911,7 +917,9 @@ body {
 }
 
 .chat-bubble-text {
-  word-break: break-word;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
 }
 
 .chat-timestamp {
