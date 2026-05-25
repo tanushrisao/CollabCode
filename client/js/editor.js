@@ -25,9 +25,18 @@ const rtcConfig = {
   iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
 };
 
-// Read room ID from query string
+// Read room ID from query string or extract from path /editor/:roomId
 const urlParams = new URLSearchParams(window.location.search);
 room = urlParams.get('room');
+
+if (!room) {
+  // If the path looks like /editor/1e3dq6x0, extract the room ID
+  const pathParts = window.location.pathname.split('/');
+  const editorIdx = pathParts.indexOf('editor');
+  if (editorIdx !== -1 && pathParts[editorIdx + 1]) {
+    room = pathParts[editorIdx + 1];
+  }
+}
 
 if (!room) {
   window.location.href = './index.html';
@@ -530,7 +539,18 @@ function initSocketIO() {
   const username = localStorage.getItem('collab_username') || `Dev-${Math.floor(1000 + Math.random() * 9000)}`;
 
   if (typeof io === 'undefined') {
-    updateUsersStack([{ username, letter: username.charAt(0).toUpperCase() }]);
+    console.warn("Socket.io script not ready yet. Dynamically injecting CDN fallback...");
+    const script = document.createElement('script');
+    script.src = "https://cdn.socket.io/4.7.5/socket.io.min.js";
+    script.onload = () => {
+      console.log("Socket.io CDN Fallback loaded successfully! Connecting...");
+      initSocketIO();
+    };
+    script.onerror = () => {
+      console.error("Failed to load Socket.io client library. Operating in offline mode.");
+      updateUsersStack([{ username, letter: username.charAt(0).toUpperCase() }]);
+    };
+    document.head.appendChild(script);
     return;
   }
 

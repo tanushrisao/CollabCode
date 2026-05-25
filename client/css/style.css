@@ -1245,13 +1245,14 @@ body {
   border-left-color: var(--accent-red);
 }
 
-/* RESPONSIVENESS */
+/* 📱 MOBILE RESPONSIVENESS & PREMIUM SLIDE-OVER OVERLAYS */
 @media (max-width: 990px) {
   .editor-grid {
     flex-direction: column;
+    position: relative;
   }
   .output-pane {
-    width: 100%;
+    width: 100% !important;
     height: 35%;
     min-height: 200px;
     border-top: 1px solid var(--glass-border);
@@ -1266,5 +1267,107 @@ body {
     margin-right: 0;
     margin-bottom: -300px;
     height: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  /* Navbar and toolbar padding & flow */
+  .navbar {
+    padding: 0.6rem 1rem;
+    height: auto;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+  }
+
+  .logo {
+    font-size: 1.25rem;
+  }
+
+  .nav-links {
+    gap: 0.8rem;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
+    padding: 0.6rem 1rem;
+  }
+
+  .toolbar-section {
+    justify-content: space-between;
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  /* Compact selectors & touch targets */
+  .custom-select {
+    padding: 0.5rem 1.6rem 0.5rem 0.6rem;
+    font-size: 0.8rem;
+    min-height: 38px;
+  }
+
+  .btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.8rem;
+    flex-grow: 1;
+    min-height: 38px;
+  }
+
+  /* Avatars stack hiding details for screen space */
+  .online-users-wrapper {
+    gap: 0.4rem;
+  }
+  .avatar-circle {
+    width: 28px;
+    height: 28px;
+    font-size: 0.8rem;
+  }
+
+  .editor-pane {
+    height: 65%;
+    border-bottom: 1px solid var(--glass-border);
+  }
+
+  .output-pane {
+    height: 35%;
+  }
+
+  /* 💎 Slide-over full overlay sidebar on mobile devices */
+  .sidebar-pane {
+    position: absolute !important;
+    top: 0;
+    right: 0;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: 100% !important;
+    z-index: 1000 !important;
+    margin-right: 0 !important;
+    margin-bottom: 0 !important;
+    border-top: none;
+    box-shadow: -10px 0 35px rgba(0, 0, 0, 0.6);
+    transform: translateX(100%);
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1), opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .sidebar-pane:not(.collapsed) {
+    transform: translateX(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar-pane.collapsed {
+    transform: translateX(100%);
+    opacity: 0;
+    pointer-events: none;
+    height: 100% !important;
+  }
+
+  .video-container {
+    height: 140px;
+    min-height: 140px;
   }
 }
