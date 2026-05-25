@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workspace | COLLABCODE Pro</title>
+  <meta name="description" content="Collaborate, edit, and execute code in real-time. Features multi-file tabs, live audio/video calls, team text chat, and Piston sandboxed multi-language compilation.">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar Injected Here -->
+  <div id="navbar-container"></div>
+
+  <!-- Central Workspace Shell -->
+  <main class="workspace-container">
+    
+    <!-- Workspace Sub-Toolbar -->
+    <section class="toolbar" aria-label="Editor controls">
+      
+      <!-- Left side controls -->
+      <div class="toolbar-section">
+        <!-- Styled Custom Language dropdown -->
+        <div class="dropdown-container">
+          <select id="select-language" class="custom-select" title="Switch coding language">
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python</option>
+            <option value="html">HTML</option>
+            <option value="css">CSS</option>
+            <option value="typescript">TypeScript</option>
+            <option value="json">JSON</option>
+            <option value="markdown">Markdown</option>
+          </select>
+        </div>
+
+        <!-- Themes Selector dropdown -->
+        <div class="dropdown-container">
+          <select id="select-theme" class="custom-select" title="Switch editor visual theme">
+            <option value="collabcode-dark">🎨 Space Dark</option>
+            <option value="monokai">🎨 Monokai</option>
+            <option value="vs-light">🎨 Cyber Light</option>
+            <option value="hc-black">🎨 High Contrast</option>
+          </select>
+        </div>
+
+        <!-- Overlapping Active Users indicator -->
+        <div class="online-users-wrapper" id="users-status-stack">
+          <div class="avatar-stack" id="avatar-stack">
+            <!-- Avatars injected dynamically -->
+          </div>
+          <span class="online-count" id="online-count">0 online</span>
+        </div>
+      </div>
+
+      <!-- Right side actions -->
+      <div class="toolbar-section">
+        <button class="btn btn-secondary" id="btn-share" title="Copy shareable workspace URL to clipboard">
+          🔗 Share
+        </button>
+        <button class="btn btn-secondary" id="btn-fork" title="Fork this workspace into your own new session">
+          🍴 Fork
+        </button>
+        <button class="btn btn-secondary" id="btn-save" title="Save this session workspace to cloud database">
+          💾 Save
+        </button>
+        <button class="btn btn-primary" id="btn-run" title="Execute this script in safety sandbox">
+          ▶ Run
+        </button>
+        <!-- Toggle Chat/Voice Sidebar drawer -->
+        <button class="btn btn-secondary" id="btn-chat-toggle" style="background: rgba(0, 230, 118, 0.08); border-color: rgba(0, 230, 118, 0.25); color: var(--accent-green);" title="Toggle collaboration sidebar">
+          💬 Chat
+        </button>
+      </div>
+
+    </section>
+
+    <!-- Main Dynamic Grid split (Holds Editor, Output Panel, and collapsible Sidebar) -->
+    <section class="editor-grid" id="main-editor-grid">
+      
+      <!-- Editor Panel (with multi-file tabs row) -->
+      <div class="editor-pane" id="editor-wrapper-pane">
+        
+        <!-- Multi-File Tabs Container Bar -->
+        <div class="tab-bar">
+          <div class="tabs-list" id="tabs-list">
+            <!-- Active tabs injected here, e.g. <div class="tab active">index.js</div> -->
+          </div>
+          <button class="btn-add-file" id="btn-add-file" title="Create a new file">+</button>
+        </div>
+
+        <!-- Monaco Workspace -->
+        <div id="editor-container" style="height: calc(100% - 40px); width: 100%;"></div>
+      </div>
+
+      <!-- Monospace Output Panel -->
+      <div class="output-pane" id="output-wrapper-pane">
+        
+        <!-- Output Header with Status Indicators -->
+        <div class="output-header">
+          <div class="output-title">
+            📟 Console Output
+          </div>
+          <div class="status-indicator">
+            <div class="status-dot idle" id="status-dot"></div>
+            <span id="status-text">Idle</span>
+          </div>
+        </div>
+
+        <!-- Execution outputs container -->
+        <div class="output-body" id="output-body">
+          <span class="output-placeholder">// Click "Run" to execute your code</span>
+        </div>
+
+      </div>
+
+      <!-- Collapsible Sidebar: Collaboration Drawer (Chat + Peer Videos calls) -->
+      <aside class="sidebar-pane collapsed" id="sidebar-pane">
+        
+        <!-- WebRTC Live Video/Voice Call Panel -->
+        <div class="video-container" id="video-container">
+          <div class="video-grid" id="video-grid">
+            <!-- Cam feeds, e.g. <video autoplay playsinline muted></video> -->
+            <div class="video-placeholder" id="video-placeholder-box">
+              🎥 Video/Voice Calls Offline
+            </div>
+          </div>
+          <div class="video-controls">
+            <button class="video-btn disabled" id="btn-toggle-mic" title="Toggle Mic Access" disabled>🎙️</button>
+            <button class="video-btn disabled" id="btn-toggle-cam" title="Toggle Camera Access" disabled>📷</button>
+            <button class="btn btn-primary" id="btn-join-call" style="padding: 0.4rem 0.8rem; font-size: 0.8rem;" title="Join WebRTC Room Voice/Video Call">
+              📞 Join Call
+            </button>
+          </div>
+        </div>
+
+        <!-- Team Real-Time Chat Pane -->
+        <div class="chat-container">
+          <div class="chat-header">💬 Workspace Chat</div>
+          
+          <div class="chat-messages" id="chat-messages">
+            <div class="chat-system-message">Welcome to the team room chat! Send a message to start.</div>
+          </div>
+          
+          <form class="chat-input-area" id="chat-form">
+            <input type="text" id="chat-input" placeholder="Type a message..." autocomplete="off" required>
+            <button type="submit" class="chat-send-btn">Send</button>
+          </form>
+        </div>
+
+      </aside>
+
+    </section>
+
+  </main>
+
+  <!-- Central Dynamic Toast Notifications -->
+  <div id="app-toast" class="toast"></div>
+
+  <!-- Monaco AMD Script Loader -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.39.0/min/vs/loader.min.js"></script>
+  
+  <!-- Socket.io Sync CDN Library -->
+  <script src="https://cdn.socket.io/4.6.1/socket.io.min.js"></script>
+
+  <!-- Core Javascript Logic -->
+  <script src="./js/main.js"></script>
+  <script src="./js/editor.js"></script>
+</body>
+</html>

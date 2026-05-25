@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COLLABCODE | Real-Time Collaborative Code Editor</title>
+  <meta name="description" content="Collaborate on code with friends in real-time. Featuring full Monaco Editor integration, sandboxed JS execution, and seamless session saving. No signup required.">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar Injected Here -->
+  <div id="navbar-container"></div>
+
+  <!-- Hero / Landing Container -->
+  <main class="hero-container">
+    <!-- Ambient back glow sphere -->
+    <div class="hero-glow-sphere"></div>
+
+    <section class="landing-card glass-panel" id="hero-card">
+      <h1 class="hero-title text-gradient">
+        Collaborative Coding,<br>Reimagined.
+      </h1>
+      <p class="hero-subtitle">
+        Write, share, and run code together in real-time. Built with Monaco, Socket.io, and absolute fluid responsiveness.
+      </p>
+
+      <!-- CTA Action Button -->
+      <button class="btn btn-primary btn-hero" id="btn-start-coding">
+        Start Coding →
+      </button>
+
+      <!-- Feature Tags Grid -->
+      <div class="feature-tags-grid">
+        <div class="feature-tag">
+          <span>⚡</span> Real-Time Sync
+        </div>
+        <div class="feature-tag">
+          <span>✏️</span> Monaco Editor
+        </div>
+        <div class="feature-tag">
+          <span>▶️</span> JavaScript Sandbox
+        </div>
+        <div class="feature-tag">
+          <span>👥</span> Active User Avatars
+        </div>
+        <div class="feature-tag">
+          <span>💾</span> Session Saving
+        </div>
+        <div class="feature-tag">
+          <span>🔗</span> Instantly Shareable
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Central Dynamic Toast Notifications -->
+  <div id="app-toast" class="toast"></div>
+
+  <!-- Shared & Page Logic -->
+  <script src="./js/main.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const startCodingBtn = document.getElementById('btn-start-coding');
+      
+      if (startCodingBtn) {
+        startCodingBtn.addEventListener('click', () => {
+          // Generate new unique room ID
+          const roomId = generateRoomId();
+          showToast('Initializing collaborative room...', 'success');
+          
+          // Redirect to the editor page with room query parameter
+          setTimeout(() => {
+            window.location.href = `./editor.html?room=${roomId}`;
+          }, 600);
+        });
+      }
+    });
+  </script>
+</body>
+</html>

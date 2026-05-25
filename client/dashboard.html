@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Sessions | COLLABCODE Pro</title>
+  <meta name="description" content="Browse, search, open, and delete your saved real-time collaborative coding sessions on COLLABCODE Pro.">
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+<body>
+
+  <!-- Dynamic Navbar Injected Here -->
+  <div id="navbar-container"></div>
+
+  <!-- Dashboard Content Shell -->
+  <main class="dashboard-container">
+    <!-- Ambient back glow sphere -->
+    <div class="hero-glow-sphere" style="top: 20%; width: 400px; height: 400px;"></div>
+
+    <header class="dashboard-header">
+      <div>
+        <h1 class="dashboard-title text-gradient">My Workspaces</h1>
+        <p style="color: var(--text-secondary); font-size: 0.95rem; margin-top: 0.2rem;">
+          Manage your saved real-time collaborative coding sessions
+        </p>
+      </div>
+      <span class="btn btn-secondary" style="pointer-events: none; border-color: rgba(0, 230, 118, 0.2);" id="sessions-count">
+        0 Sessions
+      </span>
+    </header>
+
+    <!-- Search and Filters row -->
+    <section class="dashboard-search-row">
+      <input 
+        type="text" 
+        id="search-input" 
+        class="dashboard-search-input" 
+        placeholder="🔍 Search workspaces by title, room ID, or coding language..."
+        autocomplete="off"
+      >
+      <a href="./index.html" class="btn btn-primary" style="white-space: nowrap; padding: 0.75rem 1.5rem; border-radius: 8px;">
+        + New Room
+      </a>
+    </section>
+
+    <!-- Cards Grid -->
+    <section class="dashboard-grid" id="sessions-grid">
+      <!-- Session cards will be injected dynamically -->
+      <div style="grid-column: 1/-1; text-align: center; padding: 4rem 2rem; color: var(--text-secondary); font-family: var(--font-sans);" id="loading-placeholder">
+        Loading saved workspaces...
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Central Dynamic Toast Notifications -->
+  <div id="app-toast" class="toast"></div>
+
+  <!-- Shared & Page Logic -->
+  <script src="./js/main.js"></script>
+  <script src="./js/dashboard.js"></script>
+</body>
+</html>
