@@ -2,6 +2,10 @@
 
 // GLOBAL ERROR CAPTURE FOR BROWSER-SIDE DIAGNOSTICS
 window.addEventListener('error', (event) => {
+  // Ignore harmless generic cross-origin script errors, browser extension noise, or empty files
+  if (event.message === 'Script error.' || !event.filename || event.filename.includes('extensions')) {
+    return;
+  }
   const errorMsg = `${event.message} at ${event.filename ? event.filename.split('/').pop() : 'unknown'}:${event.lineno || 0}:${event.colno || 0}`;
   console.error("Captured global error:", errorMsg);
   
