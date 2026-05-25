@@ -1,5 +1,39 @@
 // COLLABCODE PRO - MONACO EDITOR CONTROLLER, COLLABORATION CHAT, & WebRTC CALLS
 
+// GLOBAL ERROR CAPTURE FOR BROWSER-SIDE DIAGNOSTICS
+window.addEventListener('error', (event) => {
+  const errorMsg = `${event.message} at ${event.filename ? event.filename.split('/').pop() : 'unknown'}:${event.lineno || 0}:${event.colno || 0}`;
+  console.error("Captured global error:", errorMsg);
+  
+  // Render diagnostic banner on the page
+  let banner = document.getElementById('diagnostic-error-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'diagnostic-error-banner';
+    banner.style.position = 'fixed';
+    banner.style.top = '70px';
+    banner.style.left = '0';
+    banner.style.width = '100%';
+    banner.style.background = 'rgba(255, 23, 68, 0.95)';
+    banner.style.color = '#fff';
+    banner.style.padding = '0.5rem 1rem';
+    banner.style.fontSize = '0.82rem';
+    banner.style.fontWeight = '700';
+    banner.style.fontFamily = 'monospace';
+    banner.style.zIndex = '999999';
+    banner.style.textAlign = 'center';
+    banner.style.wordBreak = 'break-all';
+    banner.style.boxShadow = '0 4px 15px rgba(0,0,0,0.5)';
+    document.body.appendChild(banner);
+  }
+  banner.textContent = `⚠️ Runtime Error: ${errorMsg}`;
+});
+
+window.addEventListener('unhandledrejection', (event) => {
+  const reason = event.reason && event.reason.message ? event.reason.message : String(event.reason);
+  console.error("Captured unhandled rejection:", reason);
+});
+
 let editorInstance = null;
 let socket = null;
 let room = '';
