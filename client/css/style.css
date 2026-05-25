@@ -636,12 +636,13 @@ body {
   flex-direction: column;
   background: var(--bg-deep);
   border-right: 1px solid var(--glass-border);
+  min-width: 0; /* Prevents Monaco editor from overflowing flexbox containers */
 }
 
 /* Output Panel */
 .output-pane {
   width: 35%;
-  min-width: 280px;
+  min-width: 0; /* Enables dynamic shrinking inside flexbox grid */
   background: #090a0d;
   height: 100%;
   display: flex;

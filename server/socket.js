@@ -191,6 +191,25 @@ function initSocket(io) {
     });
 
     // WebRTC PEER-TO-PEER VIDEO CALL SIGNALING
+    socket.on('request-calls-signaling', ({ roomId, room, username }) => {
+      const activeRoomId = roomId || room;
+      if (!activeRoomId) return;
+
+      // Broadcast to other users in the room that a caller has joined the conference
+      socket.to(activeRoomId).emit('user-joined-call', {
+        socketId: socket.id,
+        username
+      });
+    });
+
+    socket.on('leave-call', ({ roomId, room }) => {
+      const activeRoomId = roomId || room;
+      if (!activeRoomId) return;
+
+      // Broadcast immediate clean teardown on other peer devices
+      socket.to(activeRoomId).emit('user-left-call', { socketId: socket.id });
+    });
+
     socket.on('call-user', ({ roomId, room, userToCall, offer, from }) => {
       socket.to(userToCall).emit('call-made', {
         offer,

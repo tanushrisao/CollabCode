@@ -4,6 +4,7 @@ let editorInstance = null;
 let socket = null;
 let room = '';
 let isRemoteChange = false;
+let pendingServerData = null; // Buffer to hold server data if it loads before Monaco
 
 // Multi-file state
 let files = {
@@ -354,9 +355,14 @@ function initMonacoEditor() {
       autoClosingBrackets: 'always'
     });
 
-    // Load active file tab model buffer
-    switchActiveFile(activeFile);
-    renderTabs();
+    // Load server data if it arrived before editor was ready, otherwise fallback
+    if (pendingServerData) {
+      applyServerCode(pendingServerData);
+      pendingServerData = null;
+    } else {
+      switchActiveFile(activeFile);
+      renderTabs();
+    }
 
     // Event: Capture code changes and emit
     editorInstance.onDidChangeModelContent((event) => {
@@ -471,6 +477,19 @@ function switchActiveFile(filename) {
   renderTabs();
 }
 
+// APPLY SERVER LOADED CODE BUFFER
+function applyServerCode(data) {
+  if (data.files) {
+    files = data.files;
+    activeFile = data.activeFile || "index.js";
+  } else if (data.code) {
+    files["index.js"] = { code: data.code, language: data.language || "javascript" };
+    activeFile = "index.js";
+  }
+  switchActiveFile(activeFile);
+  renderTabs();
+}
+
 // DELETE A TABS WRITER FILE
 function deleteFileTab(event, filename) {
   event.stopPropagation();
@@ -525,23 +544,23 @@ function initSocketIO() {
     socket.emit('join-room', { room, username });
   });
 
+  socket.on('connect_error', (err) => {
+    console.error('Socket connection error:', err);
+    showToast(`Collaboration server offline: ${err.message}`, 'error');
+  });
+
+  socket.on('disconnect', (reason) => {
+    console.warn('Socket disconnected:', reason);
+    showToast(`Connection lost: ${reason}`, 'error');
+  });
+
   // Sync: Loads room multi-file workspace
   socket.on('load-code', (data) => {
-    if (!editorInstance) return;
-
-    if (data.files) {
-      files = data.files;
-      activeFile = data.activeFile || "index.js";
-      
-      // Load active file tab model buffer
-      switchActiveFile(activeFile);
-      renderTabs();
-    } else if (data.code) {
-      // Fallback single file load
-      files["index.js"] = { code: data.code, language: data.language || "javascript" };
-      switchActiveFile("index.js");
-      renderTabs();
+    if (!editorInstance) {
+      pendingServerData = data; // Keep in buffer until editor is ready
+      return;
     }
+    applyServerCode(data);
   });
 
   // Sync: Dynamic character modifications
@@ -982,6 +1001,28 @@ function setupWebRTCCalls() {
 
   // Socket: Receive signaling broker offers, answers, and candidates
   if (socket) {
+    // Listen for new user joining call room, then initiate calling them
+    socket.on('user-joined-call', async (data) => {
+      if (!localStream) return; // Only call them if we are currently active in the call ourselves
+
+      const pc = getOrCreatePeerConnection(data.socketId, data.username);
+      
+      try {
+        const offer = await pc.createOffer();
+        await pc.setLocalDescription(offer);
+        
+        const myUsername = localStorage.getItem('collab_username') || 'Developer';
+        socket.emit('call-user', {
+          room,
+          userToCall: data.socketId,
+          offer,
+          from: myUsername
+        });
+      } catch (e) {
+        console.error('Error initiating call offer:', e);
+      }
+    });
+
     // Receive ICE Signaling Offer
     socket.on('call-made', async (data) => {
       if (!localStream) return; // Only process if active in call
@@ -1136,6 +1177,11 @@ function leaveActiveCall() {
     peerConnections[socketId].close();
   });
   peerConnections = {};
+
+  // Notify other room users that we have left the call
+  if (socket && socket.connected) {
+    socket.emit('leave-call', { room });
+  }
 
   // Reset frontend UI panels
   const localVideo = document.getElementById('local-video');
