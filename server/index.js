@@ -53,7 +53,11 @@ app.get('/dashboard', (req, res) => {
 });
 
 // 🚫 4. If someone goes to a page that doesn't exist, show the beautiful 404 Page!
-app.get('/*splat', (req, res) => {
+app.get('/*splat', (req, res, next) => {
+  // Bypass Express catch-all for Socket.io polling/handshake endpoints
+  if (req.path.startsWith('/socket.io')) {
+    return next();
+  }
   res.status(404).sendFile(path.join(__dirname, '../client/404.html'));
 });
 // Connect to MongoDB, then start server
