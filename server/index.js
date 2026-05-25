@@ -13,16 +13,16 @@ const { initSocket } = require('./socket');
 const app = express();
 const httpServer = http.createServer(app);
 
-// Set up Socket.io with CORS so frontend can connect
+// Set up Socket.io with CORS to accept any origin (bulletproof for both localhost and live deploy)
 const io = new Server(httpServer, {
   cors: {
-    origin: process.env.CLIENT_URL,
+    origin: '*',
     methods: ['GET', 'POST'],
   },
 });
 
 // Middleware — parse JSON, allow cross-origin requests
-app.use(cors({ origin: process.env.CLIENT_URL }));
+app.use(cors());
 app.use(express.json());
 
 // ⚡ ADD THIS: Tell server to load files from client folder
